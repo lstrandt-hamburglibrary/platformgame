@@ -15,6 +15,7 @@ const ROOMS = {
 #.....R................#
 #P....R........T..####D#
 ########################
+########################
     `.trim(),
 
     2: `
@@ -27,6 +28,7 @@ const ROOMS = {
 #......R...............#
 #......R.......T.......#
 #......R..........####D#
+########################
 ########################
     `.trim(),
 
@@ -41,6 +43,7 @@ const ROOMS = {
 #.....R................#
 #P....R................#
 ########################
+########################
     `.trim()
 };
 
@@ -51,17 +54,19 @@ class PharaohsCurseScene extends Phaser.Scene {
 
     init() {
         // Game state
-        this.currentRoom = 1;
-        this.lives = 3;
+        this.currentRoom = this.currentRoom || 1;
+        this.lives = this.lives || 3;
         this.score = 0;
         this.hasKey = false;
-        this.treasuresCollected = 0;
+        this.treasuresCollected = this.treasuresCollected || 0;
         this.totalTreasures = 0;
 
         // Player state
         this.runTime = 0;
         this.canJump = false;
         this.isOnRope = false;
+        this.playerStartX = 0;
+        this.playerStartY = 0;
     }
 
     preload() {
@@ -75,10 +80,10 @@ class PharaohsCurseScene extends Phaser.Scene {
         // Create graphics textures
         this.createTextures();
 
-        // Parse and create current room
+        // Parse and create current room (sets playerStartX/Y)
         this.loadRoom(this.currentRoom);
 
-        // Create player
+        // Create player AFTER loading room so we have spawn position
         this.createPlayer();
 
         // Physics
