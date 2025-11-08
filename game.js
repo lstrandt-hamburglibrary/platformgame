@@ -73,6 +73,9 @@ class PharaohsCurseScene extends Phaser.Scene {
         // Game constants
         this.tileSize = 32;
 
+        // PAUSE physics during setup to prevent objects falling before collision is set up
+        this.physics.pause();
+
         // Create graphics textures
         this.createTextures();
 
@@ -87,6 +90,10 @@ class PharaohsCurseScene extends Phaser.Scene {
 
         // Setup collisions (MUST happen after player and platforms exist)
         this.setupCollisions();
+
+        // NOW resume physics - everything is ready
+        this.physics.resume();
+        console.log('Physics resumed - game ready!');
 
         // Input
         this.setupControls();
