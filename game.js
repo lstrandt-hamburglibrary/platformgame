@@ -344,15 +344,21 @@ class PharaohsCurseScene extends Phaser.Scene {
     createMummy(x, y) {
         const mummy = this.physics.add.sprite(x, y, 'mummy');
         mummy.setVelocityX(60);
+        mummy.setBounce(0);
+        mummy.setCollideWorldBounds(true);
         mummy.setData('type', 'mummy');
         this.enemies.add(mummy);
+        console.log('Created mummy at', x, y);
     }
 
     createPharaoh(x, y) {
         const pharaoh = this.physics.add.sprite(x, y, 'pharaoh');
         pharaoh.setVelocityX(80);
+        pharaoh.setBounce(0);
+        pharaoh.setCollideWorldBounds(true);
         pharaoh.setData('type', 'pharaoh');
         this.enemies.add(pharaoh);
+        console.log('Created pharaoh at', x, y);
     }
 
     createWingedAvatar(x, y) {
