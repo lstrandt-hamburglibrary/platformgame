@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="manifest" href="manifest.json">
+    <title>Pharaoh's Curse</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(180deg, #1a1a1a 0%, #2d1810 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            color: #FFD700;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin: 20px 0 10px 0;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8);
+            letter-spacing: 4px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #AAA;
+            margin-bottom: 20px;
+        }
+
+        #game-container {
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            border: 3px solid #8B4513;
+        }
+
+        #controls {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: rgba(42, 42, 42, 0.9);
+            border: 2px solid #8B4513;
+            border-radius: 10px;
+            max-width: 800px;
+        }
+
+        #controls h2 {
+            margin-top: 0;
+            color: #FFD700;
+            font-size: 24px;
+        }
+
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        .key {
+            display: inline-block;
+            padding: 5px 12px;
+            background: linear-gradient(180deg, #666 0%, #444 100%);
+            border: 2px solid #888;
+            border-radius: 5px;
+            margin-right: 10px;
+            min-width: 100px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .description {
+            color: #CCC;
+        }
+
+        .game-info {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: rgba(42, 42, 42, 0.9);
+            border: 2px solid #8B4513;
+            border-radius: 10px;
+            max-width: 800px;
+        }
+
+        .game-info h2 {
+            margin-top: 0;
+            color: #FFD700;
+        }
+
+        .game-info p {
+            color: #CCC;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <h1>⚱️ PHARAOH'S CURSE ⚱️</h1>
+    <div class="subtitle">A tribute to the 1983 Atari classic</div>
+
+    <div id="game-container"></div>
+
+    <div id="controls">
+        <h2>🎮 CONTROLS</h2>
+        <div class="control-grid">
+            <div class="control-row">
+                <span class="key">← →</span>
+                <span class="description">Move Left/Right</span>
+            </div>
+            <div class="control-row">
+                <span class="key">SPACE</span>
+                <span class="description">Jump (while running)</span>
+            </div>
+            <div class="control-row">
+                <span class="key">↑ ↓</span>
+                <span class="description">Climb Ropes</span>
+            </div>
+            <div class="control-row">
+                <span class="key">SHIFT</span>
+                <span class="description">Shoot</span>
+            </div>
+            <div class="control-row">
+                <span class="key">R</span>
+                <span class="description">Restart Game</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-info">
+        <h2>📜 YOUR QUEST</h2>
+        <p>
+            You are an archaeologist exploring an ancient Egyptian pyramid.
+            Navigate through 16 interconnected chambers, collecting sacred treasures
+            while avoiding the vengeful Pharaoh, his mummy guards, and deadly traps.
+        </p>
+        <p>
+            <strong>🔑 Find keys</strong> to unlock doors to new chambers.<br>
+            <strong>🪜 Climb ropes</strong> to reach higher platforms.<br>
+            <strong>💎 Collect treasures</strong> to earn extra lives.<br>
+            <strong>⚠️ Beware the Winged Avatar</strong> - it will teleport you and steal your keys!
+        </p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.js"></script>
+    <script type="module" src="game.js"></script>
+</body>
+</html>
