@@ -592,8 +592,20 @@ class PharaohsCurseScene extends Phaser.Scene {
         }
 
         // Enemy AI
-        this.enemies.getChildren().forEach(enemy => {
-            if (enemy.body.blocked.left || enemy.body.blocked.right) {
+        this.enemies.getChildren().forEach((enemy, index) => {
+            // Debug first frame only
+            if (time < 100 && index === 0) {
+                console.log('Enemy debug:', {
+                    x: enemy.x,
+                    y: enemy.y,
+                    hasBody: !!enemy.body,
+                    velocityY: enemy.body?.velocity.y,
+                    touching: enemy.body?.touching,
+                    blocked: enemy.body?.blocked
+                });
+            }
+
+            if (enemy.body && (enemy.body.blocked.left || enemy.body.blocked.right)) {
                 enemy.setVelocityX(-enemy.body.velocity.x);
             }
         });
