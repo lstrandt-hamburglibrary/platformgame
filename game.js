@@ -80,14 +80,17 @@ class PharaohsCurseScene extends Phaser.Scene {
         // Create graphics textures
         this.createTextures();
 
-        // Parse and create current room (sets playerStartX/Y)
+        // Parse and create current room (sets playerStartX/Y and creates platforms)
         this.loadRoom(this.currentRoom);
 
         // Create player AFTER loading room so we have spawn position
         this.createPlayer();
 
-        // Physics
-        this.setupPhysics();
+        // Setup physics world
+        this.physics.world.gravity.y = 800;
+
+        // Setup collisions (MUST happen after player and platforms exist)
+        this.setupCollisions();
 
         // Input
         this.setupControls();
@@ -301,10 +304,14 @@ class PharaohsCurseScene extends Phaser.Scene {
 
         // Set world bounds
         this.physics.world.setBounds(0, 0, this.levelWidth, this.levelHeight);
+
+        // Log for debugging
+        console.log(`Room ${roomNumber} loaded: ${this.platforms.getChildren().length} platforms created`);
     }
 
     createWall(x, y) {
         const wall = this.platforms.create(x, y, 'wall');
+        wall.setDisplaySize(this.tileSize, this.tileSize);
         wall.refreshBody();
     }
 
@@ -378,8 +385,11 @@ class PharaohsCurseScene extends Phaser.Scene {
         this.player.setCollideWorldBounds(true);
     }
 
-    setupPhysics() {
-        this.physics.world.gravity.y = 800;
+    setupCollisions() {
+        console.log('Setting up collisions...');
+        console.log('Player exists:', !!this.player);
+        console.log('Platforms exist:', !!this.platforms);
+        console.log('Platform count:', this.platforms ? this.platforms.getChildren().length : 0);
 
         // Collisions
         this.physics.add.collider(this.player, this.platforms);
