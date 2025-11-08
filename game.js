@@ -388,14 +388,24 @@ class PharaohsCurseScene extends Phaser.Scene {
     }
 
     setupCollisions() {
-        console.log('Setting up collisions...');
+        console.log('=== COLLISION SETUP ===');
         console.log('Player exists:', !!this.player);
+        console.log('Player position:', this.player.x, this.player.y);
         console.log('Platforms exist:', !!this.platforms);
         console.log('Platform count:', this.platforms ? this.platforms.getChildren().length : 0);
+        console.log('Enemies count:', this.enemies ? this.enemies.getChildren().length : 0);
+
+        if (this.platforms) {
+            const platforms = this.platforms.getChildren();
+            console.log('First platform:', platforms[0] ? {x: platforms[0].x, y: platforms[0].y} : 'none');
+            console.log('Last platform:', platforms[platforms.length-1] ? {x: platforms[platforms.length-1].x, y: platforms[platforms.length-1].y} : 'none');
+        }
 
         // Collisions
-        this.physics.add.collider(this.player, this.platforms);
-        this.physics.add.collider(this.enemies, this.platforms);
+        const playerCollider = this.physics.add.collider(this.player, this.platforms);
+        const enemyCollider = this.physics.add.collider(this.enemies, this.platforms);
+        console.log('Player collider created:', !!playerCollider);
+        console.log('Enemy collider created:', !!enemyCollider);
 
         // Overlaps
         this.physics.add.overlap(this.player, this.keys, this.collectKey, null, this);
