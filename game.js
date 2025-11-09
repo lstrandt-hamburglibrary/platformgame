@@ -7,12 +7,22 @@
 const ROOMS = {
     1: `
 ########################
-#......................#
 #.....K................#
-#..######..............#
 #......................#
-#.....R......M.........#
-#P....R..............D.#
+#..#####R..............#
+#.......R..............#
+#.......R..............#
+#.......R..............#
+#.......R..............#
+#.......R..............#
+#.......R..............#
+#.......R..............#
+#.......R..............#
+#.......R..............#
+#.......R..............#
+#.......R..............#
+#.......R....M.........#
+#P......R............D.#
 ########################
 ########################
     `.trim(),
@@ -20,24 +30,65 @@ const ROOMS = {
     2: `
 ########################
 #......................#
-#P........W............#
-#...$$$$$..............#
-#...######.............#
-#.........M............#
-#......R...............#
-#......R..........####D#
+#...........K..........#
+#...$$$$$R.............#
+#...######R............#
+#.........R............#
+#.........R............#
+#.........R............#
+#.........R............#
+#.........R............#
+#.........R............#
+#.........R............#
+#.........R............#
+#.........R............#
+#.........R............#
+#.........R....M.......#
+#P........R..........D.#
 ########################
 ########################
     `.trim(),
 
     3: `
 ########################
+#.....K................#
+#......R...............#
+#..####R...............#
+#......R...............#
+#......R...............#
+#......R...............#
+#......R...............#
+#......R...............#
+#......R...............#
+#......R...............#
+#......R...............#
+#......R...............#
+#......R...............#
+#......R...............#
+#P.....R...F....M......#
+#......R.............D.#
+########################
+########################
+    `.trim(),
+
+    4: `
+########################
+#P..................K..#
 #......................#
-#P...K.................#
-#..####................#
+#.....#####............#
 #......................#
-#.....F.....M..........#
-#.....R................#
+#..........#####.......#
+#......................#
+#.#####................#
+#........######........#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#......................#
+#....................D.#
 ########################
 ########################
     `.trim()
@@ -49,11 +100,11 @@ class PharaohsCurseScene extends Phaser.Scene {
     }
 
     init() {
-        // Game state
+        // Game state - preserve across room changes
         this.currentRoom = this.currentRoom || 1;
         this.lives = this.lives || 3;
         this.score = 0;
-        this.hasKey = false;
+        this.hasKey = this.hasKey || false; // Preserve key across rooms
         this.treasuresCollected = this.treasuresCollected || 0;
         this.totalTreasures = 0;
 
@@ -73,11 +124,11 @@ class PharaohsCurseScene extends Phaser.Scene {
         // Game constants
         this.tileSize = 32;
 
-        // PAUSE physics during setup to prevent objects falling before collision is set up
-        this.physics.pause();
-
         // Create graphics textures
         this.createTextures();
+
+        // Setup physics world FIRST before creating any physics objects
+        this.physics.world.gravity.y = 800;
 
         // Parse and create current room (sets playerStartX/Y and creates platforms)
         this.loadRoom(this.currentRoom);
@@ -85,15 +136,8 @@ class PharaohsCurseScene extends Phaser.Scene {
         // Create player AFTER loading room so we have spawn position
         this.createPlayer();
 
-        // Setup physics world
-        this.physics.world.gravity.y = 800;
-
-        // Setup collisions (MUST happen after player and platforms exist)
+        // IMMEDIATELY setup collisions before any physics step runs
         this.setupCollisions();
-
-        // NOW resume physics - everything is ready
-        this.physics.resume();
-        console.log('Physics resumed - game ready!');
 
         // Input
         this.setupControls();
@@ -120,14 +164,15 @@ class PharaohsCurseScene extends Phaser.Scene {
             g.destroy();
         }
 
-        // Rope
+        // Rope - extends beyond tile to ensure continuous appearance
         if (!this.textures.exists('rope')) {
             const g = this.add.graphics();
-            g.lineStyle(4, 0xD2B48C, 1); // Tan
-            g.lineBetween(16, 0, 16, 32);
-            g.lineStyle(2, 0x8B7355, 1); // Darker tan
-            g.lineBetween(14, 0, 14, 32);
-            g.lineBetween(18, 0, 18, 32);
+            // Draw rope lines extending beyond tile boundaries to overlap
+            g.lineStyle(8, 0xD2B48C, 1); // Tan - thick main rope
+            g.lineBetween(16, -2, 16, 34); // Extend 2px beyond top and bottom
+            g.lineStyle(3, 0x8B7355, 1); // Darker tan - shadow lines
+            g.lineBetween(12, -2, 12, 34);
+            g.lineBetween(20, -2, 20, 34);
             g.generateTexture('rope', this.tileSize, this.tileSize);
             g.destroy();
         }
@@ -237,22 +282,13 @@ class PharaohsCurseScene extends Phaser.Scene {
     }
 
     loadRoom(roomNumber) {
-        // Clear previous room objects
-        if (this.platforms) this.platforms.clear(true, true);
-        if (this.ropes) this.ropes.getChildren().forEach(r => r.destroy());
-        if (this.keys) this.keys.getChildren().forEach(k => k.destroy());
-        if (this.doors) this.doors.getChildren().forEach(d => d.destroy());
-        if (this.treasures) this.treasures.getChildren().forEach(t => t.destroy());
-        if (this.enemies) this.enemies.getChildren().forEach(e => e.destroy());
-        if (this.traps) this.traps.getChildren().forEach(t => t.destroy());
-
         const roomText = ROOMS[roomNumber];
         const lines = roomText.split('\n').filter(line => line.trim().length > 0);
 
         this.levelHeight = lines.length * this.tileSize;
         this.levelWidth = Math.max(...lines.map(line => line.length)) * this.tileSize;
 
-        // Create groups
+        // Create groups fresh (scene.restart already destroyed everything)
         this.platforms = this.physics.add.staticGroup();
         this.ropes = this.add.group();
         this.keys = this.physics.add.group();
@@ -307,9 +343,6 @@ class PharaohsCurseScene extends Phaser.Scene {
 
         // Set world bounds
         this.physics.world.setBounds(0, 0, this.levelWidth, this.levelHeight);
-
-        // Log for debugging
-        console.log(`Room ${roomNumber} loaded: ${this.platforms.getChildren().length} platforms created`);
     }
 
     createWall(x, y) {
@@ -320,6 +353,7 @@ class PharaohsCurseScene extends Phaser.Scene {
 
     createRope(x, y) {
         const rope = this.add.sprite(x, y, 'rope');
+        rope.setDisplaySize(this.tileSize, this.tileSize);
         rope.setData('isRope', true);
         this.ropes.add(rope);
     }
@@ -327,12 +361,14 @@ class PharaohsCurseScene extends Phaser.Scene {
     createKey(x, y) {
         const key = this.physics.add.sprite(x, y, 'key');
         key.body.setAllowGravity(false);
+        key.body.moves = false;
         this.keys.add(key);
     }
 
     createDoor(x, y) {
         const door = this.physics.add.sprite(x, y, 'door');
         door.body.setAllowGravity(false);
+        door.body.moves = false;
         door.setData('nextRoom', this.getNextRoom());
         this.doors.add(door);
     }
@@ -340,28 +376,29 @@ class PharaohsCurseScene extends Phaser.Scene {
     createTreasure(x, y) {
         const treasure = this.physics.add.sprite(x, y, 'treasure');
         treasure.body.setAllowGravity(false);
+        treasure.body.moves = false;
         this.treasures.add(treasure);
         this.totalTreasures++;
     }
 
     createMummy(x, y) {
         const mummy = this.physics.add.sprite(x, y, 'mummy');
-        mummy.setVelocityX(60);
+        mummy.body.setAllowGravity(false); // Disable until collision setup
         mummy.setBounce(0);
         mummy.setCollideWorldBounds(true);
         mummy.setData('type', 'mummy');
+        mummy.setData('initialVelocity', 60); // Store for later
         this.enemies.add(mummy);
-        console.log('Created mummy at', x, y);
     }
 
     createPharaoh(x, y) {
         const pharaoh = this.physics.add.sprite(x, y, 'pharaoh');
-        pharaoh.setVelocityX(80);
+        pharaoh.body.setAllowGravity(false); // Disable until collision setup
         pharaoh.setBounce(0);
         pharaoh.setCollideWorldBounds(true);
         pharaoh.setData('type', 'pharaoh');
+        pharaoh.setData('initialVelocity', 80); // Store for later
         this.enemies.add(pharaoh);
-        console.log('Created pharaoh at', x, y);
     }
 
     createWingedAvatar(x, y) {
@@ -380,8 +417,8 @@ class PharaohsCurseScene extends Phaser.Scene {
 
     getNextRoom() {
         // Simple room progression for now
-        if (this.currentRoom < 3) return this.currentRoom + 1;
-        return 1; // Loop back
+        if (this.currentRoom < 4) return this.currentRoom + 1;
+        return 1; // Loop back to room 1 after room 4
     }
 
     createPlayer() {
@@ -395,24 +432,20 @@ class PharaohsCurseScene extends Phaser.Scene {
     }
 
     setupCollisions() {
-        console.log('=== COLLISION SETUP ===');
-        console.log('Player exists:', !!this.player);
-        console.log('Player position:', this.player.x, this.player.y);
-        console.log('Platforms exist:', !!this.platforms);
-        console.log('Platform count:', this.platforms ? this.platforms.getChildren().length : 0);
-        console.log('Enemies count:', this.enemies ? this.enemies.getChildren().length : 0);
+        // Player collision with platforms - store reference so we can disable it while climbing
+        this.playerPlatformCollider = this.physics.add.collider(this.player, this.platforms);
 
-        if (this.platforms) {
-            const platforms = this.platforms.getChildren();
-            console.log('First platform:', platforms[0] ? {x: platforms[0].x, y: platforms[0].y} : 'none');
-            console.log('Last platform:', platforms[platforms.length-1] ? {x: platforms[platforms.length-1].x, y: platforms[platforms.length-1].y} : 'none');
-        }
+        // Enemy collisions - set up individually and enable gravity
+        this.enemies.getChildren().forEach((enemy) => {
+            this.physics.add.collider(enemy, this.platforms);
 
-        // Collisions
-        const playerCollider = this.physics.add.collider(this.player, this.platforms);
-        const enemyCollider = this.physics.add.collider(this.enemies, this.platforms);
-        console.log('Player collider created:', !!playerCollider);
-        console.log('Enemy collider created:', !!enemyCollider);
+            // Enable gravity and set velocity after collision is set up
+            if (enemy.getData('type') === 'mummy' || enemy.getData('type') === 'pharaoh') {
+                enemy.body.setAllowGravity(true);
+                const vel = enemy.getData('initialVelocity');
+                enemy.setVelocityX(vel);
+            }
+        });
 
         // Overlaps
         this.physics.add.overlap(this.player, this.keys, this.collectKey, null, this);
@@ -584,6 +617,11 @@ class PharaohsCurseScene extends Phaser.Scene {
             this.player.setVelocityY(0);
             this.player.body.setAllowGravity(false);
 
+            // Disable platform collision while climbing so player can pass through gaps
+            if (this.playerPlatformCollider) {
+                this.playerPlatformCollider.active = false;
+            }
+
             if (this.cursors.up.isDown) {
                 this.player.setVelocityY(-150);
             } else if (this.cursors.down.isDown) {
@@ -592,26 +630,19 @@ class PharaohsCurseScene extends Phaser.Scene {
         } else {
             this.player.body.setAllowGravity(true);
 
+            // Re-enable platform collision when not on rope
+            if (this.playerPlatformCollider) {
+                this.playerPlatformCollider.active = true;
+            }
+
             // Jump (only if running and on ground)
             if (this.spaceKey.isDown && this.player.body.touching.down && this.canJump) {
                 this.player.setVelocityY(-400);
             }
         }
 
-        // Enemy AI
-        this.enemies.getChildren().forEach((enemy, index) => {
-            // Debug first frame only
-            if (time < 100 && index === 0) {
-                console.log('Enemy debug:', {
-                    x: enemy.x,
-                    y: enemy.y,
-                    hasBody: !!enemy.body,
-                    velocityY: enemy.body?.velocity.y,
-                    touching: enemy.body?.touching,
-                    blocked: enemy.body?.blocked
-                });
-            }
-
+        // Enemy AI - patrol back and forth
+        this.enemies.getChildren().forEach((enemy) => {
             if (enemy.body && (enemy.body.blocked.left || enemy.body.blocked.right)) {
                 enemy.setVelocityX(-enemy.body.velocity.x);
             }
@@ -627,12 +658,10 @@ class PharaohsCurseScene extends Phaser.Scene {
         this.isOnRope = false;
 
         this.ropes.getChildren().forEach(rope => {
-            const distance = Phaser.Math.Distance.Between(
-                this.player.x, this.player.y,
-                rope.x, rope.y
-            );
+            // Check horizontal distance only - allows climbing entire vertical rope
+            const horizontalDistance = Math.abs(this.player.x - rope.x);
 
-            if (distance < 20) {
+            if (horizontalDistance < 20) {
                 this.isOnRope = true;
             }
         });
