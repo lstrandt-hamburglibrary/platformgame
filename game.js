@@ -6,69 +6,84 @@
 // Room definitions (will expand to 16 total)
 const ROOMS = {
     1: `
-########################
-#.....K................#
-#......................#
-#..#####R..............#
-#.......R..............#
-#.......R..............#
-#.......R..............#
-#.......R..............#
-#.......R..............#
-#.......R..............#
-#.......R..............#
-#.......R..............#
-#.......R..............#
-#.......R..............#
-#.......R..............#
-#.......R....M.........#
-#P......R............D.#
-########################
-########################
+####################
+#P.................#
+#..................#
+#.................D#
+#..............R####
+#..............R...#
+#...#####......R...#
+#..............R...#
+#..............R...#
+#........#.........#
+####....#....#####.#
+#......#...........#
+#.....#...........$#
+#....#.......R######
+#...#........R.....#
+#.$#.........R.....#
+#.#..........R.....#
+#............R.....#
+#..............K...#
+#..........#####...#
+#..........#.......#
+#.........#........#
+#..$$..............#
+####################
     `.trim(),
 
     2: `
-########################
-#......................#
-#...........K..........#
-#...$$$$$R.............#
-#...######R............#
-#.........R............#
-#.........R............#
-#.........R............#
-#.........R............#
-#.........R............#
-#.........R............#
-#.........R............#
-#.........R............#
-#.........R............#
-#.........R............#
-#.........R....M.......#
-#P........R..........D.#
-########################
-########################
+####################
+#..................#
+#...$.............P#
+#...######.........#
+#.........#.......##
+#..........#....D#.#
+#...........#...#..#
+#..............#...#
+#.............#....#
+#............#.....#
+#R###..######......#
+#R.................#
+#R.................#
+#R.................#
+########..#####....#
+#..............#...#
+#...............#..#
+#................#.#
+#..................#
+#..................#
+#....########.######
+#....#......#......#
+#........$..#...$.K#
+####################
     `.trim(),
 
     3: `
-########################
-#.....K................#
-#......R...............#
-#..####R...............#
-#......R...............#
-#......R...............#
-#......R...............#
-#......R...............#
-#......R...............#
-#......R...............#
-#......R...............#
-#......R...............#
-#......R...............#
-#......R...............#
-#......R...............#
-#P.....R...F....M......#
-#......R.............D.#
-########################
-########################
+####################
+#............#.....#
+#............#.....#
+#............#.#..P#
+#............#..#..#
+#............#...#.#
+#K..........D#....##
+####..#######.#....#
+#...#..........#...#
+#....#..........#..#
+#.....#..........#.#
+#......#.........#.#
+#.......#........#.#
+#..................#
+#.........##########
+#........#.........#
+#.......#..........#
+#......#...........#
+#.....#..R#######.R#
+#R#####..R....$#..R#
+#R.......R....#...R#
+#R.......R...#....R#
+#R.......R..#.$...R#
+####################
     `.trim(),
 
     4: `
@@ -91,6 +106,28 @@ const ROOMS = {
 #....................D.#
 ########################
 ########################
+    `.trim(),
+
+    5: `
+########################
+#....###....####.......#
+#P.......###......####.#
+#.........#######......#
+####..................#
+#........#####.........#
+#K.....####.......#####
+####..........###......#
+#...R..................#
+#...R..................#
+#...R..................#
+#...R..................#
+#...R..................#
+#...R..................#
+#...R..................#
+#...R..................#
+#...R................D.#
+########################
+########################
     `.trim()
 };
 
@@ -101,7 +138,7 @@ class PharaohsCurseScene extends Phaser.Scene {
 
     init() {
         // Game state - preserve across room changes
-        this.currentRoom = this.currentRoom || 1;
+        this.currentRoom = this.currentRoom || 3;
         this.lives = this.lives || 3;
         this.score = 0;
         this.hasKey = this.hasKey || false; // Preserve key across rooms
@@ -417,8 +454,8 @@ class PharaohsCurseScene extends Phaser.Scene {
 
     getNextRoom() {
         // Simple room progression for now
-        if (this.currentRoom < 4) return this.currentRoom + 1;
-        return 1; // Loop back to room 1 after room 4
+        if (this.currentRoom < 5) return this.currentRoom + 1;
+        return 1; // Loop back to room 1 after room 5
     }
 
     createPlayer() {
@@ -429,6 +466,7 @@ class PharaohsCurseScene extends Phaser.Scene {
         );
         this.player.setBounce(0.1);
         this.player.setCollideWorldBounds(true);
+        this.player.body.setAllowGravity(true); // Explicitly enable gravity
     }
 
     setupCollisions() {
@@ -469,39 +507,42 @@ class PharaohsCurseScene extends Phaser.Scene {
     }
 
     createUI() {
+        // All stats in upper right corner, stacked vertically
+        const rightX = 660;
+
         // Lives
-        this.livesText = this.add.text(16, 16, `Lives: ${this.lives}`, {
-            fontSize: '20px',
+        this.livesText = this.add.text(rightX, 16, `Lives: ${this.lives}`, {
+            fontSize: '16px',
             fill: '#FF0000',
             backgroundColor: '#000000',
-            padding: { x: 8, y: 4 }
+            padding: { x: 6, y: 3 }
         });
         this.livesText.setScrollFactor(0).setDepth(1000);
 
         // Room number
-        this.roomText = this.add.text(16, 46, `Room: ${this.currentRoom}`, {
-            fontSize: '20px',
+        this.roomText = this.add.text(rightX, 38, `Room: ${this.currentRoom}`, {
+            fontSize: '16px',
             fill: '#FFD700',
             backgroundColor: '#000000',
-            padding: { x: 8, y: 4 }
+            padding: { x: 6, y: 3 }
         });
         this.roomText.setScrollFactor(0).setDepth(1000);
 
         // Key status
-        this.keyText = this.add.text(16, 76, `Key: ${this.hasKey ? '🔑' : '❌'}`, {
-            fontSize: '20px',
+        this.keyText = this.add.text(rightX, 60, `Key: ${this.hasKey ? '🔑' : '❌'}`, {
+            fontSize: '16px',
             fill: '#FFFFFF',
             backgroundColor: '#000000',
-            padding: { x: 8, y: 4 }
+            padding: { x: 6, y: 3 }
         });
         this.keyText.setScrollFactor(0).setDepth(1000);
 
         // Treasures
-        this.treasureText = this.add.text(16, 106, `Treasures: ${this.treasuresCollected}`, {
-            fontSize: '20px',
+        this.treasureText = this.add.text(rightX, 82, `Treasures: ${this.treasuresCollected}`, {
+            fontSize: '16px',
             fill: '#FFD700',
             backgroundColor: '#000000',
-            padding: { x: 8, y: 4 }
+            padding: { x: 6, y: 3 }
         });
         this.treasureText.setScrollFactor(0).setDepth(1000);
     }
@@ -581,6 +622,7 @@ class PharaohsCurseScene extends Phaser.Scene {
 
     changeRoom(roomNumber) {
         this.currentRoom = roomNumber;
+        this.hasKey = false; // Reset key for new room
         this.scene.restart();
     }
 
@@ -609,9 +651,6 @@ class PharaohsCurseScene extends Phaser.Scene {
             this.runTime = 0;
         }
 
-        // Running-before-jumping mechanic
-        this.canJump = this.runTime > 300; // Must run for 300ms before jumping
-
         // Rope climbing
         if (this.isOnRope) {
             this.player.setVelocityY(0);
@@ -635,8 +674,8 @@ class PharaohsCurseScene extends Phaser.Scene {
                 this.playerPlatformCollider.active = true;
             }
 
-            // Jump (only if running and on ground)
-            if (this.spaceKey.isDown && this.player.body.touching.down && this.canJump) {
+            // Jump (only if on ground)
+            if (this.spaceKey.isDown && this.player.body.touching.down) {
                 this.player.setVelocityY(-400);
             }
         }
@@ -661,7 +700,7 @@ class PharaohsCurseScene extends Phaser.Scene {
             // Check horizontal distance only - allows climbing entire vertical rope
             const horizontalDistance = Math.abs(this.player.x - rope.x);
 
-            if (horizontalDistance < 20) {
+            if (horizontalDistance < 16) { // Reduced from 20 to 16 (half tile)
                 this.isOnRope = true;
             }
         });
